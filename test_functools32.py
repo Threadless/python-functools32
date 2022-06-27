@@ -637,6 +637,52 @@ class TestLRU(unittest.TestCase):
             with self.assertRaises(IndexError):
                 func(15)
 
+    def test_lru_slice(self):
+        def orig(o, x, y):
+            return 3*x+y
+        f = functools.lru_cache(maxsize=20, key_arg_slice_start=1)(orig)
+        hits, misses, maxsize, currsize = f.cache_info()
+        self.assertEqual(maxsize, 20)
+        self.assertEqual(currsize, 0)
+        self.assertEqual(hits, 0)
+        self.assertEqual(misses, 0)
+
+        obj1 = "object1"
+        obj2 = "object2"
+        obj3 = "object3"
+        f(obj1, 1, 1)
+        f(obj2, 1, 1)
+        f(obj3, 1, 1)
+
+        hits, misses, maxsize, currsize = f.cache_info()
+        self.assertEqual(maxsize, 20)
+        self.assertEqual(currsize, 1)
+        self.assertEqual(hits, 2)
+        self.assertEqual(misses, 1)
+
+    def test_lru_slice_no_max(self):
+        def orig(o, x, y):
+            return 3*x+y
+        f = functools.lru_cache(maxsize=None, key_arg_slice_start=1)(orig)
+        hits, misses, maxsize, currsize = f.cache_info()
+        self.assertEqual(maxsize, None)
+        self.assertEqual(currsize, 0)
+        self.assertEqual(hits, 0)
+        self.assertEqual(misses, 0)
+
+        obj1 = "object1"
+        obj2 = "object2"
+        obj3 = "object3"
+        f(obj1, 1, 1)
+        f(obj2, 1, 1)
+        f(obj3, 1, 1)
+
+        hits, misses, maxsize, currsize = f.cache_info()
+        self.assertEqual(maxsize, None)
+        self.assertEqual(currsize, 1)
+        self.assertEqual(hits, 2)
+        self.assertEqual(misses, 1)
+
 class TestOrderedDict(unittest.TestCase):
     def test_move_to_end(self):
         od = OrderedDict.fromkeys('abcde')

@@ -334,7 +334,7 @@ def cmp_to_key(mycmp):
 
 _CacheInfo = namedtuple("CacheInfo", "hits misses maxsize currsize")
 
-def lru_cache(maxsize=100):
+def lru_cache(maxsize=100, key_arg_slice_start=None, key_arg_slice_stop=None):
     """Least-recently-used cache decorator.
 
     If *maxsize* is set to None, the LRU features are disabled and the cache
@@ -366,7 +366,16 @@ def lru_cache(maxsize=100):
 
             @wraps(user_function)
             def wrapper(*args, **kwds):
-                key = args
+
+                if key_arg_slice_start and key_arg_slice_stop:
+                    key = args[key_arg_slice_start:key_arg_slice_stop]
+                elif key_arg_slice_start:
+                    key = args[key_arg_slice_start:]
+                elif key_arg_slice_stop:
+                    key = args[:key_arg_slice_stop]
+                else:
+                    key = args
+                
                 if kwds:
                     key += kwd_mark + tuple(sorted(kwds.items()))
                 try:
@@ -386,7 +395,16 @@ def lru_cache(maxsize=100):
 
             @wraps(user_function)
             def wrapper(*args, **kwds):
-                key = args
+                
+                if key_arg_slice_start and key_arg_slice_stop:
+                    key = args[key_arg_slice_start:key_arg_slice_stop]
+                elif key_arg_slice_start:
+                    key = args[key_arg_slice_start:]
+                elif key_arg_slice_stop:
+                    key = args[:key_arg_slice_stop]
+                else:
+                    key = args
+
                 if kwds:
                     key += kwd_mark + tuple(sorted(kwds.items()))
                 with lock:
